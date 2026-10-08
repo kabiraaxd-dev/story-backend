@@ -69,6 +69,21 @@ export async function adminStoryRoutes(app: FastifyInstance) {
     }
   });
 
+   app.get<{ Params: { id: string } }>(
+     "/admin/stories/:id",
+     guard,
+     async (req, reply) => {
+       const story = await prisma.story.findUnique({
+         where: { id: Number(req.params.id) },
+         include: { tags: { select: { id: true } } },
+       });
+       if (!story) return reply.code(404).send({ error: "Not found" });
+       if (req.user.role !== "ADMIN" && story.createdById !== req.user.sub)
+         return reply.code(403).send({ error: "Forbidden" });
+       return story;
+     },
+   );
+
   app.patch<{ Params: { id: string } }>(
     "/admin/stories/:id",
     guard,

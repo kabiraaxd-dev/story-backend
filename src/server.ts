@@ -1,7 +1,7 @@
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 import { PrismaClient, Prisma } from "@prisma/client";
-import prisma from "./db";
+import { prisma } from "./db";
 import { registerAuth } from "./auth";
 import { authRoutes } from "./authRoutes";
 import { adminStoryRoutes } from "./adminStories";
@@ -24,10 +24,12 @@ const storySummary = {
 
 async function start() {
   // await app.register(cors, { origin: "http://localhost:5173" });
-   await app.register(cors, {
-     origin: "http://localhost:5173",
-     credentials: true,
-   });
+  await app.register(cors, {
+    origin: ["http://localhost:5173", "http://localhost:5174"],
+    credentials: true,
+    methods: ["GET", "HEAD", "POST", "PATCH", "DELETE", "OPTIONS"],
+  });
+   
    await registerAuth(app);
    await app.register(authRoutes);
    await app.register(adminStoryRoutes);
@@ -84,6 +86,9 @@ async function start() {
 
   app.get("/categories", () =>
     prisma.category.findMany({ orderBy: { name: "asc" } }),
+  );
+  app.get("/authors", () =>
+    prisma.author.findMany({ orderBy: { name: "asc" } }),
   );
   app.get("/tags", () => prisma.tag.findMany({ orderBy: { name: "asc" } }));
   app.get("/age-groups", () =>
