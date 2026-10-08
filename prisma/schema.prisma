@@ -1,0 +1,69 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum StoryStatus {
+  DRAFT
+  IN_REVIEW
+  PUBLISHED
+}
+
+model Author {
+  id      Int     @id @default(autoincrement())
+  name    String
+  bio     String?
+  stories Story[]
+}
+
+model Category {
+  id      Int     @id @default(autoincrement())
+  name    String  @unique
+  slug    String  @unique
+  stories Story[]
+}
+
+model AgeGroup {
+  id      Int     @id @default(autoincrement())
+  label   String  @unique   // e.g. "3-5"
+  minAge  Int
+  maxAge  Int
+  stories Story[]
+}
+
+model Tag {
+  id      Int     @id @default(autoincrement())
+  name    String  @unique
+  slug    String  @unique
+  stories Story[]
+}
+
+model Story {
+  id           Int         @id @default(autoincrement())
+  title        String
+  slug         String      @unique
+  summary      String
+  content      String
+  mainImageUrl String?
+  audioUrl     String?
+  status       StoryStatus @default(DRAFT)
+  publishedAt  DateTime?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  authorId   Int
+  categoryId Int
+  ageGroupId Int
+  author     Author   @relation(fields: [authorId], references: [id])
+  category   Category @relation(fields: [categoryId], references: [id])
+  ageGroup   AgeGroup @relation(fields: [ageGroupId], references: [id])
+  tags       Tag[]
+
+  @@index([categoryId])
+  @@index([ageGroupId])
+  @@index([status, publishedAt])
+}
