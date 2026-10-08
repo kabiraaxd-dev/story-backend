@@ -13,6 +13,11 @@ enum StoryStatus {
   PUBLISHED
 }
 
+enum Role {
+  ADMIN
+  CREATOR
+}
+
 model Author {
   id      Int     @id @default(autoincrement())
   name    String
@@ -62,8 +67,21 @@ model Story {
   category   Category @relation(fields: [categoryId], references: [id])
   ageGroup   AgeGroup @relation(fields: [ageGroupId], references: [id])
   tags       Tag[]
+  createdById Int?
+  createdBy   User? @relation(fields: [createdById], references: [id])
 
   @@index([categoryId])
   @@index([ageGroupId])
   @@index([status, publishedAt])
+  @@index([createdById])
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  name         String
+  passwordHash String
+  role         Role     @default(CREATOR)
+  createdAt    DateTime @default(now())
+  stories      Story[]
 }

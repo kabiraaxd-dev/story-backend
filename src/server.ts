@@ -1,8 +1,12 @@
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 import { PrismaClient, Prisma } from "@prisma/client";
+import prisma from "./db";
+import { registerAuth } from "./auth";
+import { authRoutes } from "./authRoutes";
+import { adminStoryRoutes } from "./adminStories";
 
-const prisma = new PrismaClient();
+// const prisma = new PrismaClient();
 const app = Fastify({ logger: true });
 
 const storySummary = {
@@ -19,7 +23,14 @@ const storySummary = {
 } satisfies Prisma.StorySelect;
 
 async function start() {
-  await app.register(cors, { origin: "http://localhost:5173" });
+  // await app.register(cors, { origin: "http://localhost:5173" });
+   await app.register(cors, {
+     origin: "http://localhost:5173",
+     credentials: true,
+   });
+   await registerAuth(app);
+   await app.register(authRoutes);
+   await app.register(adminStoryRoutes);
 
   app.get("/health", async () => ({ ok: true }));
 

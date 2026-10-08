@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import argon2 from "argon2";
 const prisma = new PrismaClient();
 
 async function main() {
@@ -7,6 +8,7 @@ async function main() {
   await prisma.category.deleteMany();
   await prisma.ageGroup.deleteMany();
   await prisma.author.deleteMany();
+  await prisma.user.deleteMany();
 
   const author = await prisma.author.create({ data: { name: "Asha Rao" } });
   const [animals, magic] = await Promise.all([
@@ -63,6 +65,22 @@ async function main() {
       },
     });
   }
+  await prisma.user.create({
+    data: {
+      email: "admin@example.com",
+      name: "Admin",
+      role: "ADMIN",
+      passwordHash: await argon2.hash("Admin#12345"),
+    },
+  });
+  await prisma.user.create({
+    data: {
+      email: "creator@example.com",
+      name: "Creator",
+      role: "CREATOR",
+      passwordHash: await argon2.hash("Creator#12345"),
+    },
+  });
 }
 
 main().finally(() => prisma.$disconnect());
