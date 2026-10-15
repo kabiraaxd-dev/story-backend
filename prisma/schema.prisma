@@ -69,6 +69,7 @@ model Story {
   tags       Tag[]
   createdById Int?
   createdBy   User? @relation(fields: [createdById], references: [id])
+  readingMinutes Int @default(1)
 
   @@index([categoryId])
   @@index([ageGroupId])

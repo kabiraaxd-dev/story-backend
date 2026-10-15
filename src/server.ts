@@ -22,6 +22,8 @@ const storySummary = {
   ageGroup: { select: { id: true, label: true } },
   author: { select: { name: true } },
   tags: { select: { name: true, slug: true } },
+  readingMinutes: true,
+  publishedAt: true,
 } satisfies Prisma.StorySelect;
 
 async function start() {

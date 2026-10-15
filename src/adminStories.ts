@@ -3,6 +3,7 @@ import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "./db";
 import { authenticate, requireRole } from "./auth";
+import { readingMinutes } from "./readingTime";
 
 const storyBody = z.object({
   title: z.string().min(1),
@@ -53,6 +54,7 @@ export async function adminStoryRoutes(app: FastifyInstance) {
       const story = await prisma.story.create({
         data: {
           ...data,
+          readingMinutes: readingMinutes(data.content),
           status: "DRAFT",
           createdById: req.user.sub,
           tags: { connect: tagIds.map((id) => ({ id })) },
@@ -102,6 +104,9 @@ export async function adminStoryRoutes(app: FastifyInstance) {
         where: { id },
         data: {
           ...data,
+          ...(data.content !== undefined && {
+            readingMinutes: readingMinutes(data.content),
+          }),
           ...(tagIds && { tags: { set: tagIds.map((t) => ({ id: t })) } }),
         },
       });
