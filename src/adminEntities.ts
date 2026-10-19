@@ -2,7 +2,7 @@ import type { FastifyInstance } from "fastify";
 import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "./db";
-import { authenticate, requireRole } from "./auth";
+import { authenticate, requirePermission } from "./auth";
 
 const authorSchema = z.object({
   name: z.string().trim().min(1),
@@ -38,7 +38,7 @@ function registerEntityRoutes<T extends EntityWithId, Create, Update>(
   },
   validateUpdate?: (existing: T, data: Update) => string | null,
 ) {
-  const adminOnly = { preHandler: [authenticate, requireRole("ADMIN")] };
+  const adminOnly = { preHandler: [authenticate, requirePermission("ADMIN")] };
 
   app.get(path, adminOnly, () => repository.list());
   app.get<{ Params: { id: string } }>(`${path}/:id`, adminOnly, async (req, reply) => {

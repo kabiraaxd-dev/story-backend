@@ -5,7 +5,10 @@ import sharp from "sharp";
 import path from "node:path";
 import { mkdir, writeFile } from "node:fs/promises";
 import { randomUUID } from "node:crypto";
-import { authenticate, requireRole } from "./auth";
+// import { authenticate, requireRole } from "./auth";
+import { authenticate, requirePermission } from "./auth";
+
+const guard = { preHandler: [authenticate, requirePermission("story:write")] };
 
 const UPLOAD_DIR = path.join(process.cwd(), "uploads");
 const PUBLIC_URL = (
@@ -30,7 +33,7 @@ export async function uploadRoutes(app: FastifyInstance) {
   await app.register(multipart, { limits: { fileSize: MAX.audio, files: 1 } });
   await app.register(fastifyStatic, { root: UPLOAD_DIR, prefix: "/media/" });
 
-  const guard = { preHandler: [authenticate, requireRole("ADMIN", "CREATOR")] };
+  const guard = { preHandler: [authenticate, requirePermission("story:write")] };
 
   app.post<{ Params: { kind: string } }>(
     "/admin/uploads/:kind",

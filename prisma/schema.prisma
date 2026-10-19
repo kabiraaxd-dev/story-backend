@@ -10,12 +10,15 @@ datasource db {
 enum StoryStatus {
   DRAFT
   IN_REVIEW
+  CHANGES_REQUESTED
   PUBLISHED
 }
 
 enum Role {
   ADMIN
   CREATOR
+  REVIEWER
+  TAXONOMY_MANAGER
 }
 
 model Author {
@@ -68,13 +71,22 @@ model Story {
   ageGroup   AgeGroup @relation(fields: [ageGroupId], references: [id])
   tags       Tag[]
   createdById Int?
-  createdBy   User? @relation(fields: [createdById], references: [id])
+  createdBy   User?     @relation("StoryCreator", fields: [createdById], references: [id])
+  reviewNote    String?
+  reviewedById  Int?
+  reviewedBy    User?     @relation("StoryReviewer", fields: [reviewedById], references: [id])
+  reviewedAt    DateTime?
+
+  publishedById Int?
+  publishedBy   User?     @relation("StoryPublisher", fields: [publishedById], references: [id])
   readingMinutes Int @default(1)
 
   @@index([categoryId])
   @@index([ageGroupId])
   @@index([status, publishedAt])
   @@index([createdById])
+  @@index([reviewedById])
+  @@index([publishedById])
 }
 
 model User {
@@ -82,7 +94,10 @@ model User {
   email        String   @unique
   name         String
   passwordHash String
-  role         Role     @default(CREATOR)
+  roles        Role[]   @default([CREATOR])
+  active       Boolean  @default(true)
   createdAt    DateTime @default(now())
-  stories      Story[]
+  createdStories   Story[]  @relation("StoryCreator")
+  reviewedStories  Story[]  @relation("StoryReviewer")
+  publishedStories Story[]  @relation("StoryPublisher")
 }

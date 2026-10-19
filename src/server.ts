@@ -7,6 +7,7 @@ import { authRoutes } from "./authRoutes";
 import { adminStoryRoutes } from "./adminStories";
 import { adminEntityRoutes } from "./adminEntities";
 import { uploadRoutes } from "./uploads";
+import { userRoutes } from "./userRoutes";
 
 // const prisma = new PrismaClient();
 const app = Fastify({ logger: true });
@@ -39,6 +40,7 @@ async function start() {
    await app.register(authRoutes);
    await app.register(adminStoryRoutes);
    await app.register(adminEntityRoutes);
+  await app.register(userRoutes);
 
   app.get("/health", async () => ({ ok: true }));
 

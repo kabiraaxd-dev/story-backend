@@ -65,7 +65,7 @@ async function main() {
       },
     });
   }
-  await prisma.user.create({
+  /* await prisma.user.create({
     data: {
       email: "admin@example.com",
       name: "Admin",
@@ -80,7 +80,39 @@ async function main() {
       role: "CREATOR",
       passwordHash: await argon2.hash("Creator#12345"),
     },
-  });
+  }); */
+    await prisma.user.create({
+      data: {
+        email: "admin@example.com",
+        name: "Admin",
+        roles: ["ADMIN"],
+        passwordHash: await argon2.hash("Admin#12345"),
+      },
+    });
+    await prisma.user.create({
+      data: {
+        email: "creator@example.com",
+        name: "Writer",
+        roles: ["CREATOR"],
+        passwordHash: await argon2.hash("Creator#12345"),
+      },
+    });
+    await prisma.user.create({
+      data: {
+        email: "reviewer@example.com",
+        name: "Reviewer",
+        roles: ["REVIEWER"],
+        passwordHash: await argon2.hash("Reviewer#12345"),
+      },
+    });
+    await prisma.user.create({
+      data: {
+        email: "taxonomy@example.com",
+        name: "Taxonomy",
+        roles: ["TAXONOMY_MANAGER"],
+        passwordHash: await argon2.hash("Taxonomy#12345"),
+      },
+    });
 }
 
 main().finally(() => prisma.$disconnect());
