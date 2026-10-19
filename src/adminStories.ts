@@ -17,6 +17,9 @@ const storyBody = z.object({
   ageGroupId: z.number().int(),
   tagIds: z.array(z.number().int()).default([]),
 });
+const unpublishBody = z.object({
+  status: z.enum(["DRAFT", "IN_REVIEW"]),
+});
 
 type Actor = { sub: number; role: "ADMIN" | "CREATOR" };
 const canEdit = (u: Actor, s: { createdById: number | null; status: string }) =>
@@ -37,6 +40,7 @@ export async function adminStoryRoutes(app: FastifyInstance) {
         title: true,
         slug: true,
         status: true,
+        author: { select: { name: true } },
         createdById: true,
         updatedAt: true,
       },
@@ -142,6 +146,30 @@ export async function adminStoryRoutes(app: FastifyInstance) {
       } catch {
         return reply.code(404).send({ error: "Not found" });
       }
+    },
+  );
+
+  app.post<{ Params: { id: string } }>(
+    "/admin/stories/:id/unpublish",
+    adminOnly,
+    async (req, reply) => {
+      const id = Number(req.params.id);
+      if (!Number.isInteger(id) || id < 1)
+        return reply.code(400).send({ error: "Invalid id" });
+
+      const parsed = unpublishBody.safeParse(req.body);
+      if (!parsed.success)
+        return reply.code(400).send({ error: "Status must be DRAFT or IN_REVIEW" });
+
+      const story = await prisma.story.findUnique({ where: { id } });
+      if (!story) return reply.code(404).send({ error: "Not found" });
+      if (story.status !== "PUBLISHED")
+        return reply.code(409).send({ error: "Only published stories can be unpublished" });
+
+      return prisma.story.update({
+        where: { id },
+        data: { status: parsed.data.status },
+      });
     },
   );
 
