@@ -60,17 +60,6 @@ export async function authRoutes(app: FastifyInstance) {
 
      setRefreshCookie(reply, refresh);
      return { accessToken: accessFor(user), user: publicUser(user) };
-
-    setRefreshCookie(reply, refresh);
-    return {
-      accessToken: accessFor(user),
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
-    };
   });
 
   app.post("/auth/refresh", async (req, reply) => {
@@ -83,12 +72,7 @@ export async function authRoutes(app: FastifyInstance) {
       if (!user) throw new Error("no user");
       return {
         accessToken: accessFor(user),
-        user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-        },
+        user: publicUser(user),
       };
     } catch {
       return reply.code(401).send({ error: "Invalid refresh token" });
